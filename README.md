@@ -25,7 +25,7 @@ This project automatically copies every change from your main database (PostgreS
 
 ```powershell
 # 1. Download the project
-git clone https://github.com/Julio-analyst/debezium-cdc-mirroring.git
+git clone https://github.com/Julio-analyst/cdc-psql-clickhouse.git
 cd debezium-cdc-mirroring/cdc-psql-clickhouse
 
 # 2. One command setup - grab a coffee! ☕
