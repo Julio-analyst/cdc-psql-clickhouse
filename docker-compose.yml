@@ -110,7 +110,7 @@ services:
 
   # Kafdrop (Kafka Web UI)
   kafdrop:
-    image: obsidiandynamics/kafdrop
+    image: obsidiandynamics/kafdrop:latest
     container_name: kafdrop
     depends_on:
       - kafka
@@ -118,7 +118,8 @@ services:
       - "9001:9000"
     environment:
       KAFKA_BROKERCONNECT: kafka:9092
-      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      JVM_OPTS: "-Xms128M -Xmx256M -Xss512K -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
+      SERVER_SERVLET_CONTEXTPATH: "/"
     networks:
       - cdc-network
 
