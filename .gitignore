@@ -1,0 +1,28 @@
+# Exclude external clickhouse setup
+external-clickhouse-setup/
+
+# Docker volumes dan logs
+volumes/
+*.log
+
+# Environment files (sensitive)
+.env.local
+.env.production
+
+# Temporary files  
+query
+temp/
+tmp/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Backup files
+*-backup.*
+*-old.*
+README-LEGACY.md
