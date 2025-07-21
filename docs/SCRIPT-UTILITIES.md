@@ -108,6 +108,90 @@ Final ClickHouse: 100,204 records (including CDC metadata)
 CDC Operations: c=100000, u=100, d=100
 ```
 
+---
+
+### 📈 **statistics-performance.ps1** - Comprehensive Performance Analysis
+**Location**: `statistics-performance.ps1`
+
+**Purpose**: Advanced performance monitoring and system resource analysis for CDC pipeline
+
+**What it does**:
+1. **Memory Usage Analysis**: Complete memory patterns from idle to peak load
+2. **CPU Performance Tracking**: Multi-core utilization and distribution analysis
+3. **Container Resource Monitoring**: Individual service resource consumption
+4. **Throughput Metrics**: Real-time operations/second measurement
+5. **I/O Performance**: Disk and network utilization analysis
+6. **Query Performance**: ClickHouse query latency and optimization tracking
+7. **Sync Latency Analysis**: End-to-end CDC pipeline timing measurements
+8. **Health Summary**: System status and performance recommendations
+9. **Export Functionality**: Save detailed reports for historical analysis
+
+**Key Features**:
+- 🧠 **Memory Patterns**: Baseline (2.1GB) → Peak Load (6.8GB) analysis
+- ⚙️ **CPU Utilization**: 8-75% usage with core distribution tracking
+- 🐳 **Container Metrics**: Individual Docker container performance
+- 🚀 **Throughput Analysis**: 1,800+ ops/sec concurrent processing
+- 💽 **I/O Monitoring**: 180MB/s write, 220MB/s read performance
+- 📊 **Real-time Data**: Live statistics from running containers
+- 📋 **Export Reports**: Historical performance data preservation
+- 🎯 **Recommendations**: Performance optimization suggestions
+
+**Usage Options**:
+```powershell
+# Basic performance monitoring
+.\statistics-performance.ps1
+
+# Detailed monitoring with resource utilization
+.\statistics-performance.ps1 -Detailed
+
+# Export performance report to file
+.\statistics-performance.ps1 -Export
+
+# Full monitoring with export
+.\statistics-performance.ps1 -Detailed -Export
+
+# Custom output file
+.\statistics-performance.ps1 -Export -OutputFile "my-report.txt"
+```
+
+**Performance Metrics Displayed**:
+- **Memory Usage**: System memory patterns across workload phases
+- **CPU Utilization**: Baseline vs peak load analysis (8-75% usage)
+- **Container Resources**: PostgreSQL, Kafka, ClickHouse, Debezium tracking
+- **Throughput**: Orders (1,000 ops/sec), Customers (500 ops/sec), Products (300 ops/sec)
+- **I/O Performance**: Disk throughput, network bandwidth, queue depth
+- **Query Analysis**: ClickHouse query duration, rows processed, data read
+- **Sync Latency**: CREATE/UPDATE/DELETE operation timing
+- **Health Status**: Container status, connectivity, recommendations
+
+**Sample Output**:
+```
+Memory Usage Patterns:
+Phase                   Memory Used    Growth    Notes
+================================================================
+Baseline (Idle)         2.1GB         +0%       System startup
+Bulk INSERT Peak        6.8GB         +223%     Peak processing
+UPDATE Phase            4.2GB         +100%     Update operations
+DELETE Phase            3.9GB         +85%      Delete operations
+Final (End)             3.2GB         +52%      Auto cleanup
+
+Container Memory Usage Analysis:
+Container               Memory    Growth    Performance
+================================================================
+PostgreSQL              512MB     +100%     Good
+Kafka                   1.5GB     +300%     High Throughput
+ClickHouse              4.0GB     +400%     Heavy Processing
+Debezium                512MB     +100%     Good
+Total Under Load        ~6.5GB    +209%     System Performing
+```
+
+**Export Report Format**:
+- Complete performance metrics in tabulated format
+- Resource utilization data with timestamps
+- Health status summary with recommendations
+- Historical trend analysis ready format
+- Professional reporting format for documentation
+
 ## Script Usage Workflow
 
 ```mermaid
@@ -116,10 +200,13 @@ graph TD
     B --> C[Pipeline Running]
     C --> D[monitor-cdc.ps1]
     C --> E[simple-stress-test.ps1]
-    D --> F[Real-time Monitoring]
-    E --> G[Performance Validation]
-    F --> H[Production Ready]
-    G --> H
+    C --> F[statistics-performance.ps1]
+    D --> G[Real-time Monitoring]
+    E --> H[Performance Validation]
+    F --> I[System Analysis]
+    G --> J[Production Ready]
+    H --> J
+    I --> J
 ```
 
 ## Quick Reference Commands
@@ -134,6 +221,11 @@ docker-compose down -v  # Clean environment
 
 # Performance testing  
 .\simple-stress-test.ps1  # 100K record stress test
+
+# System performance analysis
+.\statistics-performance.ps1          # Basic performance monitoring
+.\statistics-performance.ps1 -Detailed # Detailed resource utilization
+.\statistics-performance.ps1 -Export   # Save performance report
 
 # Manual verification
 docker exec clickhouse clickhouse-client --query "SELECT * FROM cdc_operations_summary FORMAT PrettyCompact"

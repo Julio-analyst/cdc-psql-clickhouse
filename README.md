@@ -25,7 +25,7 @@ This project automatically copies every change from your main database (PostgreS
 
 ```powershell
 # 1. Download the project
-git clone https://github.com/Julio-analyst/debezium-cdc-mirroring.git
+git clone https://github.com/Julio-analyst/cdc-psql-clickhouse.git
 cd debezium-cdc-mirroring/cdc-psql-clickhouse
 
 # 2. One command setup - grab a coffee! ☕
@@ -33,6 +33,9 @@ cd debezium-cdc-mirroring/cdc-psql-clickhouse
 
 # 3. Watch real-time changes
 .\monitor-cdc.ps1
+
+# 4. Analyze performance (optional)
+.\statistics-performance.ps1
 ```
 
 **That's it!** You now have a complete real-time data pipeline running.
@@ -73,10 +76,19 @@ After setup, you should see:
 - **📊 Kafka UI**: http://localhost:9001 - See data flowing live
 - **🗄️ ClickHouse**: http://localhost:8123 - Query your analytics database  
 - **⚙️ Health Checks**: Automated monitoring and alerting
+- **📈 Performance Dashboard**: Comprehensive system performance analysis
+
+### **Performance Analytics**
+- **🎯 Resource Utilization**: Real-time CPU, memory, and I/O monitoring
+- **⚡ Throughput Metrics**: Operations per second, latency analysis
+- **📊 Container Health**: Individual service performance tracking
+- **💾 Storage Analytics**: Disk usage, query performance, sync latency
+- **📋 Export Reports**: Save performance data for historical analysis
 
 ### **Automated Tools**
 - **`setup.ps1`** - Complete pipeline deployment
-- **`monitor-cdc.ps1`** - Real-time operation monitoring
+- **`monitor-cdc.ps1`** - Real-time operation monitoring  
+- **`statistics-performance.ps1`** - Comprehensive performance analysis & benchmarking
 - **`simple-stress-test.ps1`** - Performance validation with 100K records
 
 ### **Production Ready**
@@ -93,6 +105,7 @@ After setup, you should see:
 - **[🏆 Performance Benchmarks](testing-results/SUCCESS-METRICS.md)** - Actual throughput and latency measurements  
 - **[⚡ Stress Test Results](testing-results/STRESS-TEST-RESULTS.md)** - 100K record load testing results
 - **[🔍 Monitoring Validation](testing-results/MONITORING-VALIDATION.md)** - Real-time monitoring system verification
+- **[📈 Performance Monitoring](testing-results/PERFORMANCE-MONITORING.md)** - Comprehensive performance analysis guide
 
 **Key Proven Results:**
 - 🚀 **4,000+ records/second** bulk insert performance
@@ -100,6 +113,7 @@ After setup, you should see:
 - 🛡️ **100% data consistency** across all tests  
 - 📈 **100% uptime** during 48+ hours of testing
 - 💰 **97% time savings** vs manual processes
+- 📊 **Real-time monitoring** with comprehensive performance analytics
 
 ## 🚀 How It Works (Simple Version)
 

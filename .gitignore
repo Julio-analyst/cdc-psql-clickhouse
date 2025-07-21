@@ -26,3 +26,5 @@ Thumbs.db
 *-backup.*
 *-old.*
 README-LEGACY.md
+# Performance reports (generated files)
+cdc-performance-report-*.txt
