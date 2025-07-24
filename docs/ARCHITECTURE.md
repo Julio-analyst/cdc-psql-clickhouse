@@ -1,6 +1,5 @@
 # 🏗️ Technical Architecture
 
-**Perfect for:** Developers, DevOps engineers, and technical decision makers
 
 ## System Overview
 
@@ -21,33 +20,6 @@ PostgreSQL WAL → Debezium Connector → Kafka Topics → ClickHouse Kafka Engi
    Data Changes   JSON Events        Partitioned      Real-time            Optimized
    (Binary)       (Structured)        Streams        Consumption           Storage
 ```
-
-## Core Components
-
-### 1. **PostgreSQL (Source Database)**
-- **Role**: Primary OLTP database with business data
-- **Technology**: PostgreSQL 13+ with WAL (Write-Ahead Logging)
-- **Data**: Orders, Customers, Products, Inventory
-- **Performance**: Zero impact on production operations
-
-### 2. **Debezium CDC Connector**
-- **Role**: Change Data Capture engine
-- **Technology**: Kafka Connect + Debezium PostgreSQL connector
-- **Function**: Reads WAL, converts to JSON events
-- **Reliability**: Guaranteed delivery, exactly-once semantics
-
-### 3. **Apache Kafka**
-- **Role**: Event streaming platform
-- **Technology**: Kafka 2.8+ with Zookeeper
-- **Function**: Reliable event storage and delivery
-- **Scalability**: Horizontal partitioning support
-
-### 4. **ClickHouse (Target Database)**
-- **Role**: Analytics and OLAP database
-- **Technology**: ClickHouse with native Kafka Engine
-- **Function**: Real-time data consumption and analysis
-- **Performance**: Columnar storage, massive parallelism
-
 ## Data Flow Architecture
 
 ### Step-by-Step Process
@@ -102,21 +74,6 @@ PostgreSQL WAL → Debezium Connector → Kafka Topics → ClickHouse Kafka Engi
 | **ClickHouse** | Analytics database | 8123, 9000 | ClickHouse Keeper |
 | **Kafdrop** | Kafka Web UI | 9001 | Kafka |
 
-### Network Architecture
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Docker Network (cdcnet)                  │
-│                                                             │
-│  PostgreSQL:5432 ← → Debezium ← → Kafka:9092 ← → ClickHouse │
-│       │                                │                    │
-│       ↓                                ↓                    │
-│  Sample Data                     Kafdrop:9001               │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ↓
-                        Host: localhost
-                     (Accessible from outside)
-```
 
 ## Data Models
 
@@ -190,14 +147,6 @@ SELECT
 FROM orders_kafka_json;
 ```
 
-## Performance Characteristics
-
-### Throughput Benchmarks
-- **INSERT Operations**: 2,000-5,000 records/second
-- **UPDATE Operations**: 1,000-2,000 operations/second
-- **DELETE Operations**: 1,000-2,000 operations/second
-- **End-to-end Latency**: 5-10 seconds (95th percentile)
-
 ### Resource Requirements
 ```yaml
 # Minimum Requirements
@@ -212,18 +161,6 @@ CPU: 8+ cores
 Storage: 200GB+ NVMe SSD
 Network: 10Gbps
 ```
-
-## Scaling Strategies
-
-### Horizontal Scaling
-1. **Kafka Partitioning**: Partition topics by business key
-2. **ClickHouse Sharding**: Distribute data across multiple nodes
-3. **Load Balancing**: Multiple Kafka Connect workers
-
-### Vertical Scaling  
-1. **Memory**: More RAM for Kafka and ClickHouse buffers
-2. **CPU**: More cores for parallel processing
-3. **Storage**: Faster SSDs for better I/O performance
 
 ## Monitoring & Observability
 
@@ -263,12 +200,6 @@ services:
       - cdcnet
 ```
 
-### Authentication
-- **PostgreSQL**: Username/password authentication
-- **ClickHouse**: User-based access control
-- **Kafka**: SASL authentication (optional)
-- **Container**: Non-root user execution
-
 ## Security Architecture
 
 ### Network Security
@@ -291,24 +222,3 @@ services:
     networks:
       - cdcnet
 ```
-
-### Authentication
-- **PostgreSQL**: Username/password authentication
-- **ClickHouse**: User-based access control
-- **Kafka**: SASL authentication (optional)
-- **Container**: Non-root user execution
-
-### Data Protection
-- **Encryption in Transit**: TLS for all connections
-- **Encryption at Rest**: Database-level encryption
-- **Access Control**: Role-based permissions
-- **Audit Logging**: Complete operation trail
-
-## Related Documentation
-- ⚡ [Quick Start Guide](QUICK-START.md) - Get it running first
-- 🔧 [Troubleshooting Guide](TROUBLESHOOTING.md) - Fix technical issues
-- ⚙️ [Configuration Guide](CONFIGURATION.md) - Advanced setup options
-- 📋 [Script Utilities](SCRIPT-UTILITIES.md) - Understanding automation tools
-
----
-🏠 [← Back to Main README](../README.md) | 🔧 [Troubleshooting](TROUBLESHOOTING.md) | ⚙️ [Configuration →](CONFIGURATION.md)
