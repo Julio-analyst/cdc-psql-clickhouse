@@ -1,23 +1,14 @@
 # 🚀 Real-time Data Sync: PostgreSQL to ClickHouse
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)
-![Version](https://img.shields.io/badge/version-3.0-brightgreen.svg)
-![Tested](https://img.shields.io/badge/tested-100%25-success.svg)
 
-**Turn your business database into a real-time analytics powerhouse!** 
-
-This project automatically copies every change from your main database (PostgreSQL) to your analytics database (ClickHouse) in **real-time**. Perfect for businesses that need instant insights without slowing down their main systems.
+This project automatically copies every change from your main database (PostgreSQL) to your analytics database (ClickHouse) in **real-time** locally. 
 
 > 💡 **In Simple Terms**: When someone places an order, updates their profile, or cancels a purchase - you'll see it in your analytics dashboard within 10 seconds, automatically.
 
-## 🎯 Perfect For
+## CDC Pipeline Overview
 
-- 📊 **E-commerce**: Real-time inventory and sales tracking
-- 🏪 **Retail**: Live customer behavior analysis  
-- 💰 **Finance**: Instant transaction monitoring
-- 📈 **SaaS**: Real-time user activity analytics
-- 🏢 **Any Business**: That needs real-time business intelligence
+This CDC pipeline captures real-time data changes from PostgreSQL and MySQL using Debezium connectors, which stream updates to Kafka topics. Kafka acts as the event bus, while Kafka Connect manages data flow between connectors. Sink connectors then load the data into analytical targets like ClickHouse or other data warehouses via JDBC. This setup enables near real-time data replication for analytics without impacting source database performance.
+
 
 ## ⚡ Get Started in 5 Minutes
 
@@ -27,16 +18,34 @@ This project automatically copies every change from your main database (PostgreS
 # 1. Download the project
 git clone https://github.com/Julio-analyst/cdc-psql-clickhouse.git
 cd debezium-cdc-mirroring/cdc-psql-clickhouse
+```
+Clone the whole repository and lead it to the directory.
 
+```
 # 2. One command setup - grab a coffee! ☕
 .\scripts\setup.ps1
+```
+This script automates the end-to-end CDC process from PostgreSQL → Kafka (via Debezium) → ClickHouse, including step-by-step validation and testing/debugging tools. It is highly useful for developers or data teams who want to simplify the real-time data synchronization process between systems.
 
+```
 # 3. Watch real-time changes
 .\monitor-cdc.ps1
+```
+This script allows you to quickly view summary statistics and details about the data changes flowing from PostgreSQL → Kafka → ClickHouse via Debezium.
 
+
+```
 # 4. Analyze performance (optional)
 .\statistics-performance.ps1
 ```
+This script monitors the health and performance of a data pipeline that transfers changes from a PostgreSQL database to ClickHouse using Debezium and Kafka inside Docker containers. It checks how much memory and CPU are used during different operations like inserts and updates, evaluates the performance of each container (PostgreSQL, Kafka, ClickHouse, etc.), analyzes data throughput, disk I/O, network usage, query speed, and sync latency, and ensures all components are running properly.
+
+```
+# 5. Stress-test (optional)
+.\simple-stress-test.ps1
+```
+This script is a simple stress test of a CDC (Change Data Capture) pipeline between PostgreSQL and ClickHouse, inserting 100,000 records into PostgreSQL in 100 batches of 1,000, then verifying that the changes replicate correctly to ClickHouse via CDC. At the end, it prints total time taken, throughput (records per second), final row counts in both systems, and a summary of how many create (c), update (u), and delete (d) operations were captured in ClickHouse.
+
 
 **That's it!** You now have a complete real-time data pipeline running.
 
@@ -48,42 +57,17 @@ After setup, you should see:
 - 🎛️ **Web interface** at http://localhost:9001
 - ⚡ **Real-time updates** when you make changes
 
-## 📚 Documentation by User Type
-
-### 🚀 **I'm New - Just Want It Working**
-- **[⚡ 5-Minute Quick Start](docs/QUICK-START.md)** - Get it running fast
-- **[📈 Business Benefits](docs/BUSINESS-BENEFITS.md)** - Why this matters for your business
-- **[🔧 Troubleshooting](docs/TROUBLESHOOTING.md)** - When things go wrong
-
-### 🛠️ **I'm Technical - Want Details**  
-- **[🏗️ Technical Architecture](docs/ARCHITECTURE.md)** - How it works under the hood
-- **[📋 Script Utilities](docs/SCRIPT-UTILITIES.md)** - Detailed tool explanations
-- **[⚙️ Configuration](docs/CONFIGURATION.md)** - Advanced setup options
-
-### 💼 **I'm a Decision Maker**
-- **[📈 Business Benefits](docs/BUSINESS-BENEFITS.md)** - ROI and use cases
-- **[🎯 Success Stories](docs/BUSINESS-BENEFITS.md#success-stories)** - Real customer outcomes
-- **[💰 ROI Calculator](docs/BUSINESS-BENEFITS.md#roi-calculator)** - Calculate your savings
-
-### 🧪 **I Want to See Proof**
-- **[📊 Real Testing Results](testing-results/README.md)** - Comprehensive testing summary
-- **[🏆 Performance Data](testing-results/SUCCESS-METRICS.md)** - Actual benchmarks and metrics
-- **[⚡ Stress Test Results](testing-results/STRESS-TEST-RESULTS.md)** - 100K+ record validation
-
-## 🎛️ What You Get
 
 ### **Real-time Monitoring**
 - **📊 Kafka UI**: http://localhost:9001 - See data flowing live
 - **🗄️ ClickHouse**: http://localhost:8123 - Query your analytics database  
 - **⚙️ Health Checks**: Automated monitoring and alerting
-- **📈 Performance Dashboard**: Comprehensive system performance analysis
 
 ### **Performance Analytics**
 - **🎯 Resource Utilization**: Real-time CPU, memory, and I/O monitoring
 - **⚡ Throughput Metrics**: Operations per second, latency analysis
 - **📊 Container Health**: Individual service performance tracking
 - **💾 Storage Analytics**: Disk usage, query performance, sync latency
-- **📋 Export Reports**: Save performance data for historical analysis
 
 ### **Automated Tools**
 - **`setup.ps1`** - Complete pipeline deployment
@@ -97,24 +81,6 @@ After setup, you should see:
 - ✅ **Zero impact** on your main database
 - ✅ **Complete audit trail** of all changes
 
-## 🧪 Real Testing Results
-
-**Want proof it actually works?** See our comprehensive testing results with real performance data:
-
-- **[📊 Testing Overview](testing-results/TESTING-OVERVIEW.md)** - Complete testing summary with real metrics
-- **[🏆 Performance Benchmarks](testing-results/SUCCESS-METRICS.md)** - Actual throughput and latency measurements  
-- **[⚡ Stress Test Results](testing-results/STRESS-TEST-RESULTS.md)** - 100K record load testing results
-- **[🔍 Monitoring Validation](testing-results/MONITORING-VALIDATION.md)** - Real-time monitoring system verification
-- **[📈 Performance Monitoring](testing-results/PERFORMANCE-MONITORING.md)** - Comprehensive performance analysis guide
-
-**Key Proven Results:**
-- 🚀 **4,000+ records/second** bulk insert performance
-- ⚡ **5-10 seconds** end-to-end sync latency
-- 🛡️ **100% data consistency** across all tests  
-- 📈 **100% uptime** during 48+ hours of testing
-- 💰 **97% time savings** vs manual processes
-- 📊 **Real-time monitoring** with comprehensive performance analytics
-
 ## 🚀 How It Works (Simple Version)
 
 ```
@@ -124,21 +90,7 @@ After setup, you should see:
    Every change is automatically copied in real-time!
 ```
 
-## 💬 Community & Support
-
-- **🐛 Issues**: [Report bugs](https://github.com/Julio-analyst/debezium-cdc-mirroring/issues)
-- **💡 Ideas**: [Feature requests](https://github.com/Julio-analyst/debezium-cdc-mirroring/discussions)
-- **👥 Community**: [Discord/Slack](https://github.com/Julio-analyst/debezium-cdc-mirroring/discussions)
-
 ## 👨‍💻 Credits
 
-- **Author**: Farrel Julio
-- **LinkedIn**: [linkedin.com/in/farrel-julio-427143288](https://www.linkedin.com/in/farrel-julio-427143288)
-- **Portfolio**: [linktr.ee/Julio-analyst](https://linktr.ee/Julio-analyst)
+- **Author**: Asyraf
 
----
-
-**🎯 Ready to turn your data into real-time business intelligence?**  
-**[Start with the 5-minute setup →](docs/QUICK-START.md)**
-
-*Made with ❤️ by [Julio-analyst](https://github.com/Julio-analyst)*
