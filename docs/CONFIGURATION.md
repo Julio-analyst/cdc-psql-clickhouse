@@ -3,9 +3,6 @@
 **Perfect for:** Advanced users who want to customize the CDC pipeline
 
 ## Environment Configuration
-
-### Core Environment Vari---
-🏠 [← Back to Main README](../README.md) | 🏗️ [Architecture Guide](ARCHITECTURE.md) | 🔧 [Troubleshooting →](TROUBLESHOOTING.md)les
 ```bash
 # Database Configuration
 POSTGRES_HOST=postgres-source
@@ -151,12 +148,3 @@ SELECT
 FROM custom_table_kafka;
 ```
 
-## Related Documentation
-- ⚡ [Quick Start Guide](QUICK-START.md) - Get started first
-- �️ [Architecture Guide](ARCHITECTURE.md) - Understanding the system
-- 🔧 [Troubleshooting Guide](TROUBLESHOOTING.md) - Fix configuration issues
-- 📋 [Script Utilities](SCRIPT-UTILITIES.md) - Automation tools
-- 🏛️ [Legacy Documentation](../README-LEGACY.md) - Complete reference
-
----
-�🏠 [← Back to Main README](../README.md) | 🏗️ [Architecture Guide](ARCHITECTURE.md) | 🔧 [Troubleshooting →](TROUBLESHOOTING.md)
