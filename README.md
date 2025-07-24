@@ -3,8 +3,6 @@
 
 This project automatically copies every change from your main database (PostgreSQL) to your analytics database (ClickHouse) in **real-time** locally. 
 
-> 💡 **In Simple Terms**: When someone places an order, updates their profile, or cancels a purchase - you'll see it in your analytics dashboard within 10 seconds, automatically.
-
 ## CDC Pipeline Overview
 
 This CDC pipeline captures real-time data changes from PostgreSQL and MySQL using Debezium connectors, which stream updates to Kafka topics. Kafka acts as the event bus, while Kafka Connect manages data flow between connectors. Sink connectors then load the data into analytical targets like ClickHouse or other data warehouses via JDBC. This setup enables near real-time data replication for analytics without impacting source database performance.
