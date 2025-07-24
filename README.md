@@ -53,31 +53,8 @@ After setup, you should see:
 - 🟢 **8 services running** (check with: `docker ps`)
 - 📊 **Sample data syncing** between databases  
 - 🎛️ **Web interface** at http://localhost:9001
+- 🗄️ **ClickHouse**: http://localhost:8123 - Query your analytics database  
 - ⚡ **Real-time updates** when you make changes
-
-
-### **Real-time Monitoring**
-- **📊 Kafka UI**: http://localhost:9001 - See data flowing live
-- **🗄️ ClickHouse**: http://localhost:8123 - Query your analytics database  
-- **⚙️ Health Checks**: Automated monitoring and alerting
-
-### **Performance Analytics**
-- **🎯 Resource Utilization**: Real-time CPU, memory, and I/O monitoring
-- **⚡ Throughput Metrics**: Operations per second, latency analysis
-- **📊 Container Health**: Individual service performance tracking
-- **💾 Storage Analytics**: Disk usage, query performance, sync latency
-
-### **Automated Tools**
-- **`setup.ps1`** - Complete pipeline deployment
-- **`monitor-cdc.ps1`** - Real-time operation monitoring  
-- **`statistics-performance.ps1`** - Comprehensive performance analysis & benchmarking
-- **`simple-stress-test.ps1`** - Performance validation with 100K records
-
-### **Production Ready**
-- ✅ **5-10 second latency** end-to-end
-- ✅ **100% reliability** tested with millions of operations
-- ✅ **Zero impact** on your main database
-- ✅ **Complete audit trail** of all changes
 
 ## 🚀 How It Works (Simple Version)
 
