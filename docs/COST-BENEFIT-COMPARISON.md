@@ -98,10 +98,15 @@ Jika semua metode menggunakan biaya setup engineering $20 (sekali di awal) dan m
 
 ## 5. ROI & Benefit Bisnis
 - **Otomatisasi:** Hemat waktu manual ETL ±40 jam/bulan ($400/bulan)
+  - *Asumsi:* Sebelum otomatisasi, proses ETL manual (export-import, transformasi, validasi, dsb) memakan waktu 2 jam/hari × 20 hari kerja = 40 jam/bulan. Jika upah engineer $10/jam, maka penghematan waktu = 40 × $10 = $400/bulan.
 - **ROI bulan pertama (CDC):**
+  - ROI = (Benefit - Cost Operasional - Cost Setup) / (Cost Operasional + Cost Setup) × 100%
+  - *Asumsi:* Benefit = $400/bulan (hemat waktu manual), Cost Operasional = $13.2 (VM, storage, network), Cost Setup = $80 (sekali di awal, 1 hari × 8 jam × $10/jam)
   - ROI = ($400 - $13.2 - $80) / ($13.2 + $80) × 100% ≈ 370%
 - **Payback period:** $80 / ($400 - $13.2) ≈ 0.21 bulan (6 hari kerja)
+  - *Asumsi:* Cost setup $80, penghematan bersih per bulan $400 - $13.2 = $386.8, sehingga payback period = $80 / $386.8 ≈ 0.21 bulan.
 - **Benefit lain:** Real-time, audit trail, minim human error, downtime berkurang
+  - *Asumsi:* Pipeline CDC berjalan otomatis, data selalu up-to-date, minim intervensi manual, dan mudah audit jika ada perubahan data.
 
 ---
 
