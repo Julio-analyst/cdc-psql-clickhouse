@@ -1,4 +1,7 @@
-# Real-time PostgreSQL to ClickHouse Replication
+# Real-time CDC Pipeline: PostgreSQL → Debezium → Kafka Engine → ClickHouse
+
+**Enterprise-grade Change Data Capture with Native Streaming Analytics**
+
 ![Debezium Performance Analysis](docs/coverpsql.png)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -6,11 +9,15 @@
 ![Version](https://img.shields.io/badge/version-3.0-brightgreen.svg)
 ![Tested](https://img.shields.io/badge/tested-100%25-success.svg)
 
-**Turn your business database into a real-time analytics powerhouse!** 
+**Transform your PostgreSQL into a real-time analytics powerhouse using Debezium CDC + ClickHouse Kafka Engine!** 
 
-This project automatically copies every change from PostgreSQL to ClickHouse in **real-time**. Perfect for businesses that need instant insights without slowing down their main systems.
+This production-ready pipeline automatically streams every database change from PostgreSQL to ClickHouse in **real-time** using industry-standard Debezium Change Data Capture and ClickHouse's native Kafka Engine. Achieve sub-10-second analytics without impacting your transactional systems.
 
-> 💡 **Simple**: When someone places an order → you see it in analytics within 10 seconds, automatically.
+> 💡 **The Result**: Order placed → Real-time dashboard updated in < 10 seconds, automatically.
+
+---
+
+## 🔄 **Core Pipeline Architecture**
 
 ## 🔧 **PROJECT STATUS: COMPLETE & TESTED** 
 
@@ -154,13 +161,14 @@ docker compose down -v     # Stop (remove data)
 
 ## 🛠️ Tech Stack & Performance
 
-**Technologies:**
-- PostgreSQL 16.3 (Source OLTP database)
-- ClickHouse 24.3 (Target OLAP database) 
-- Debezium 2.6 (Change Data Capture)
-- Apache Kafka 2.6 (Event streaming)
-- Docker Compose (8 services orchestration)
-- PowerShell (Automation scripts)
+**Core Technologies:**
+- **PostgreSQL 16.3** - Source OLTP database with WAL logging
+- **Debezium 2.6** - Change Data Capture connector (PostgreSQL → Kafka)
+- **Apache Kafka 2.6** - Event streaming platform with topic partitioning
+- **ClickHouse Kafka Engine** - Native real-time stream consumer 
+- **ClickHouse 24.3** - Target OLAP database with MergeTree storage
+- **Docker Compose** - 8 services orchestration
+- **PowerShell** - Automation scripts
 
 **Performance Results:**
 - **Throughput**: 14-22 operations/second
@@ -168,6 +176,11 @@ docker compose down -v     # Stop (remove data)
 - **Success Rate**: 100% (no data loss)
 - **Resource Usage**: CPU <20%, Memory <1GB
 - **Scalability**: Tested up to 10,000 records
+
+**Why This Stack:**
+- **Debezium**: Industry-standard CDC with exactly-once semantics
+- **Kafka Engine**: ClickHouse's native streaming eliminates ETL complexity
+- **Real-time Processing**: Materialized views transform JSON → structured data instantly
 
 ---
 
@@ -302,10 +315,10 @@ After setup, you should see:
 ## 🚀 How It Works
 
 ```
-🏪 PostgreSQL Database  →  🔄 Debezium CDC  →  📈 ClickHouse Analytics
-   (Source OLTP)              (Kafka Stream)     (Target OLAP)
+🏪 PostgreSQL Database  →  🔄 Debezium CDC  →  � Kafka Topics  →  🚀 Kafka Engine  →  �📈 ClickHouse Analytics
+   (Source OLTP)             (WAL Reader)        (Event Stream)      (Real-time Consumer)    (Target OLAP)
    
-   Real-time data replication with 5-10 second latency!
+   Real-time data streaming with 5-10 second latency via native Kafka Engine!
 ```
 
 ## 💬 Community & Support
