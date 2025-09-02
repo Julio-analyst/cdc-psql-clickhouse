@@ -1,6 +1,3 @@
-# Exclude external clickhouse setup
-external-clickhouse-setup/
-
 # Docker volumes dan logs
 volumes/
 *.log
@@ -13,6 +10,11 @@ volumes/
 query
 temp/
 tmp/
+batch_*.csv
+*.tmp
+*.bak
+*.old
+*~
 
 # OS generated files
 .DS_Store
@@ -25,6 +27,7 @@ Thumbs.db
 # Backup files
 *-backup.*
 *-old.*
-README-LEGACY.md
 # Performance reports (generated files)
 cdc-performance-report-*.txt
+testing-results/
+scripts/others/

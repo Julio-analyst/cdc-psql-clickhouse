@@ -64,29 +64,34 @@ taskkill /PID <PID_NUMBER> /F
 
 #### Diagnostics:
 ```sql
--- Check if Kafka consumers are running
+-- Check if materialized views are active
+docker exec clickhouse clickhouse-client --query "SELECT * FROM system.tables WHERE name LIKE '%_mv'"
+
+-- Check ClickHouse Kafka engine status
 docker exec clickhouse clickhouse-client --query "SELECT * FROM system.kafka_consumers"
 
--- Check raw Kafka consumption
-docker exec clickhouse clickhouse-client --query "SELECT count(*) FROM orders_kafka_json"
-
--- Check materialized view
+-- Check data in final tables
 docker exec clickhouse clickhouse-client --query "SELECT count(*) FROM orders_final"
+docker exec clickhouse clickhouse-client --query "SELECT * FROM cdc_operations_summary"
 ```
 
 #### Solutions:
 ```powershell
 # 1. Check connector status
-curl -s http://localhost:8083/connectors/postgres-source-connector/status | ConvertFrom-Json
+curl -s http://localhost:8083/connectors/postgres-source-connector/status
 
-# 2. Restart Kafka consumers
-docker exec clickhouse clickhouse-client --query "SYSTEM DROP KAFKA CONSUMERS"
-docker exec clickhouse clickhouse-client --query "SYSTEM START KAFKA CONSUMERS"
+# 2. Restart ClickHouse Kafka consumers
+docker exec clickhouse clickhouse-client --query "DETACH TABLE orders_kafka_json"
+docker exec clickhouse clickhouse-client --query "ATTACH TABLE orders_kafka_json"
 
-# 3. Check Kafka topics
-docker exec -it kafka-tools kafka-topics --bootstrap-server kafka:9092 --list
+# 3. Check Kafka topics and messages
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
+docker exec kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic postgres-server.inventory.orders --from-beginning --max-messages 5
 
-# 4. Re-register connector
+# 4. Re-setup ClickHouse tables
+Get-Content .\scripts\clickhouse-setup.sql | docker exec -i clickhouse clickhouse-client --multiquery
+
+# 5. Full pipeline restart
 .\scripts\setup.ps1
 ```
 
@@ -101,38 +106,45 @@ docker exec -it kafka-tools kafka-topics --bootstrap-server kafka:9092 --list
 
 #### Diagnostics:
 ```powershell
-# Check consumer lag
-docker exec -it kafka-tools kafka-consumer-groups --bootstrap-server kafka:9092 --group clickhouse_orders_group --describe
+# Check consumer lag and status
+.\scripts\cdc-monitor.ps1
 
-# Check ClickHouse processing
+# Check ClickHouse system tables
 docker exec clickhouse clickhouse-client --query "
 SELECT 
-    table,
-    count() as messages,
+    name,
+    status,
+    last_exception
+FROM system.kafka_consumers"
+
+# Check recent sync timestamps
+docker exec clickhouse clickhouse-client --query "
+SELECT 
+    'orders' as table,
+    count() as count,
     max(_synced_at) as last_sync
-FROM (
-    SELECT 'orders' as table, _synced_at FROM orders_final
-    UNION ALL
-    SELECT 'customers' as table, _synced_at FROM customers_final  
-    UNION ALL
-    SELECT 'products' as table, _synced_at FROM products_final
-)
-GROUP BY table"
+FROM orders_final
+UNION ALL
+SELECT 
+    'customers' as table,
+    count() as count,
+    max(_synced_at) as last_sync
+FROM customers_final"
 ```
 
 #### Solutions:
 ```powershell
-# 1. Increase ClickHouse memory
-# Edit docker-compose.yml, increase clickhouse memory limit
+# 1. Run performance test to generate load
+.\scripts\cdc-stress-insert.ps1
 
-# 2. Reset consumer offsets (CAUTION: Will reprocess all data)
-docker exec -it kafka-tools kafka-consumer-groups --bootstrap-server kafka:9092 --group clickhouse_orders_group --reset-offsets --to-latest --all-topics --execute
+# 2. Monitor pipeline after load
+.\scripts\cdc-monitor.ps1
 
-# 3. Optimize ClickHouse settings
-docker exec clickhouse clickhouse-client --query "
-ALTER TABLE orders_final MODIFY SETTING 
-    merge_with_ttl_timeout = 86400,
-    max_part_loading_threads = 4"
+# 3. Restart ClickHouse Kafka consumers
+docker exec clickhouse clickhouse-client --query "SYSTEM RESTART KAFKA"
+
+# 4. Reset consumer group (will reprocess all data)
+docker exec kafka kafka-consumer-groups --bootstrap-server localhost:9092 --group clickhouse_orders_group --reset-offsets --to-latest --all-topics --execute
 ```
 
 ---
@@ -146,23 +158,23 @@ ALTER TABLE orders_final MODIFY SETTING
 
 #### Solutions:
 ```powershell
-# 1. Run as Administrator
+# 1. Run PowerShell as Administrator
 # Right-click PowerShell → "Run as Administrator"
 
 # 2. Set execution policy
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 
 # 3. Check Docker connectivity
 docker version
-docker info
+docker ps
 
-# 4. Restart services manually
-docker-compose down -v
-docker-compose up -d --wait
+# 4. Run scripts with explicit execution policy
+powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\cdc-monitor.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\cdc-stress-insert.ps1
 
-# 5. Check PowerShell version
-$PSVersionTable
-# Should be 5.1+ or PowerShell Core 7+
+# 5. Check PowerShell version (should be 5.1+)
+$PSVersionTable.PSVersion
 ```
 
 ---
@@ -225,17 +237,60 @@ systeminfo | findstr "Total Physical Memory"
 
 ### 📊 **Monitoring Performance**
 ```powershell
-# Real-time resource monitoring
-docker stats
+# Real-time resource monitoring during operations
+docker stats --no-stream
+
+# Use built-in monitoring script
+.\scripts\cdc-monitor.ps1
 
 # Check individual service performance
 docker exec clickhouse clickhouse-client --query "
 SELECT 
-    query_duration_ms,
-    read_rows,
-    read_bytes,
-    memory_usage
-FROM system.query_log 
+    name,
+    value
+FROM system.metrics 
+WHERE name LIKE '%Query%' OR name LIKE '%Memory%'
+LIMIT 10"
+
+# Monitor CDC operations summary
+docker exec clickhouse clickhouse-client --query "
+SELECT * FROM cdc_operations_summary 
+ORDER BY last_sync DESC"
+```
+
+---
+
+## Error Patterns & Solutions
+
+### 🔍 **Common Error Messages**
+
+#### "Connection timeout after 30 seconds"
+```powershell
+# Wait longer for services to start
+docker ps  # Check if containers are still starting
+.\scripts\setup.ps1  # Re-run setup
+```
+
+#### "Connector already exists"
+```powershell
+# This is normal - setup script handles this automatically
+# No action needed, setup will continue
+```
+
+#### "request returned 500 Internal Server Error"
+```powershell
+# ClickHouse not ready yet
+docker logs clickhouse --tail 10
+# Wait 1-2 minutes and try again
+```
+
+#### "The term './scripts/...' is not recognized"
+```powershell
+# Use full path or explicit execution
+powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+cd scripts
+.\setup.ps1
+``` 
 WHERE event_time > now() - INTERVAL 1 HOUR
 ORDER BY query_duration_ms DESC
 LIMIT 10"

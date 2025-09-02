@@ -43,9 +43,9 @@ SELECT
     END as id,
     CASE 
         WHEN JSONExtractString(raw_message, 'payload', 'op') = 'd' THEN
-            toDate(JSONExtractInt(raw_message, 'payload', 'before', 'order_date') + toDate('1970-01-01'))
+            toDate(toDateTime(JSONExtractInt(raw_message, 'payload', 'before', 'order_date')))
         ELSE
-            toDate(JSONExtractInt(raw_message, 'payload', 'after', 'order_date') + toDate('1970-01-01'))
+            toDate(toDateTime(JSONExtractInt(raw_message, 'payload', 'after', 'order_date')))
     END as order_date,
     CASE 
         WHEN JSONExtractString(raw_message, 'payload', 'op') = 'd' THEN

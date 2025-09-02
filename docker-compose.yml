@@ -1,6 +1,33 @@
-﻿version: '3.8'
-
+﻿
 services:
+  # ClickHouse Keeper (internal)
+  clickhouse-keeper:
+    image: clickhouse/clickhouse-keeper:24.3-alpine
+    container_name: clickhouse-keeper
+    ports:
+      - "9181:9181"
+    volumes:
+      - ./clickhouse-config/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+    networks:
+      - cdc-network
+
+  # ClickHouse Server (internal)
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3.3.102
+    container_name: clickhouse
+    environment:
+      TZ: Asia/Jakarta
+    depends_on:
+      - clickhouse-keeper
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse-config/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./clickhouse-config/users.xml:/etc/clickhouse-server/users.d/users.xml
+    networks:
+      - cdc-network
   # PostgreSQL Database (Source)
   postgres:
     image: quay.io/debezium/example-postgres:2.6
@@ -39,12 +66,13 @@ services:
       - "9092:9092"
     environment:
       ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - cdc-network
 
-  # Kafka Connect with Debezium
+  # Kafka Connect with Debezium (FIXED CONFIGURATION)
   kafka-connect:
     image: confluentinc/cp-kafka-connect:7.5.0
     container_name: kafka-connect
@@ -68,45 +96,32 @@ services:
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components
+      # FIXED: Plugin path yang benar untuk dependency discovery
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/usr/share/java/debezium-connector-postgres,/usr/share/java/clickhouse-connector
+      # Memory optimization untuk low-memory systems
+      KAFKA_HEAP_OPTS: "-Xmx512m -Xms256m"
+      # Connector configuration optimization
+      CONNECT_PRODUCER_MAX_REQUEST_SIZE: 1048576
+      CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
     volumes:
+      # FIXED: Mapping yang benar untuk plugin discovery
       - ./plugins:/usr/share/java/debezium-connector-postgres
+      - ./plugins/clickhouse:/usr/share/java/clickhouse-connector
+      # Additional plugin discovery path
+      - ./plugins:/usr/share/confluent-hub-components/debezium-postgres
+    # Memory limit untuk low-memory systems  
+    mem_limit: 1g
+    restart: unless-stopped
     networks:
       - cdc-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 60s
 
-  # ClickHouse Keeper
-  clickhouse-keeper:
-    image: clickhouse/clickhouse-keeper:24.3-alpine
-    container_name: clickhouse-keeper
-    ports:
-      - "9181:9181"
-    volumes:
-      - ./clickhouse-config/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-    networks:
-      - cdc-network
-
-  # ClickHouse Server
-  clickhouse:
-    image: clickhouse/clickhouse-server:24.3.3.102
-    container_name: clickhouse
-    environment:
-      TZ: Asia/Jakarta
-    depends_on:
-      - clickhouse-keeper
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-      - ./clickhouse-config/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - ./clickhouse-config/users.xml:/etc/clickhouse-server/users.d/users.xml
-    networks:
-      - cdc-network
+  # ClickHouse services dihapus, menggunakan server eksternal: 10.2.238.89:8123
 
   # Kafdrop (Kafka Web UI)
   kafdrop:
