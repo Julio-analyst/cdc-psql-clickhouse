@@ -1,101 +1,4 @@
-## 📄 Scripts Documentation: CDC PostgreSQL to ClickHouse
-
-Dokumentasi ini membahas hasil output, analisis, dan interpretasi dari script utama pipeline CDC PostgreSQL ke ClickHouse.
-
----
-
-### 1. `setup.ps1` - Analisis Output
-
-**Hasil Eksekusi Standar:**
-```
-============================================
-  CDC PostgreSQL to ClickHouse Setup
-============================================
-
-1. Starting all services...
-[+] Running 8/8
- ✔ Container zookeeper          Running                                                                                                          0.0s 
- ✔ Container postgres-source    Running                                                                                                          0.0s 
- ✔ Container clickhouse-keeper  Running                                                                                                          0.0s 
- ✔ Container kafka              Running                                                                                                          0.0s 
- ✔ Container kafka-tools        Running                                                                                                          0.0s 
- ✔ Container kafdrop            Running                                                                                                          0.0s 
- ✔ Container clickhouse         Running                                                                                                          0.0s 
- ✔ Container kafka-connect      Running                                                                                                          0.0s 
-```
-
-**Tahap Health Check Services:**
-```
-2. Waiting for services to be ready...
-Waiting for postgres-source to be ready...
-postgres-source is healthy!
-True
-Waiting for kafka to be ready...
-kafka is healthy!
-True
-Waiting for kafka-connect to be ready...
-kafka-connect is healthy!
-True
-Waiting for clickhouse to be ready...
-clickhouse is healthy!
-True
-```
-
-**Connector Registration:**
-```
-3. Registering Debezium source connector...
-Waiting for Kafka Connect to be fully ready...
-Kafka Connect is ready!
-⚠️ Connector already exists, deleting first...
-
-✅ Debezium connector registered successfully: postgres-source-connector
-Connector state: RUNNING
-Tasks:
-  Task 0: RUNNING
-```
-
-**ClickHouse Setup Verification:**
-```
-5. Setting up ClickHouse tables and materialized views...
-
-6. Final verification...
-Final connector state: RUNNING
-Checking Kafka topics...
-Debezium topics created: 3
-  ✓ postgres-server.inventory.customers
-  ✓ postgres-server.inventory.orders
-  ✓ postgres-server.inventory.products
-ClickHouse data counts:
-  Orders: 4
-  Customers: 4
-  Products: 9
-```
-
-**Setup Complete Summary:**
-```
-============================================
-  Setup Complete!
-============================================
-
-Useful commands:
- View orders: docker exec -i clickhouse clickhouse-client --query "SELECT * FROM orders_final ORDER BY _synced_at DESC LIMIT 10"
- View customers: docker exec -i clickhouse clickhouse-client --query "SELECT * FROM customers_final ORDER BY _synced_at DESC LIMIT 10"
- View products: docker exec -i clickhouse clickhouse-client --query "SELECT * FROM products_final ORDER BY _synced_at DESC LIMIT 10"
- Monitor CDC: docker exec -i clickhouse clickhouse-client --query "SELECT * FROM cdc_operations_summary FORMAT PrettyCompact"
- Kafdrop UI: http://localhost:9001
- ClickHouse: http://localhost:8123
-```
-
-**Interpretasi Hasil:**
-- **8 Container Running** → Semua service berhasil dijalankan
-- **Health Check Passed** → Service siap menerima koneksi
-- **Connector State: RUNNING** → Pipeline CDC aktif
-- **3 Topics Created** → Kafka topic untuk setiap tabel tersedia
-- **Initial Data Sync** → Data sampel tersinkronisasi ke ClickHouse
-
----
-
-### 2. `cdc-stress-insert.ps1` - Analisis Output
+### 1. `cdc-stress-insert.ps1` - Analisis Output
 
 **Hasil Eksekusi Test:**
 ```
@@ -153,7 +56,7 @@ Useful commands:
 
 ---
 
-### 3. `cdc-monitor.ps1` - Analisis Output
+### 2. `cdc-monitor.ps1` - Analisis Output
 
 **Container Resource Monitoring:**
 ```
