@@ -28,76 +28,164 @@ This production-ready pipeline automatically streams every database change from 
 
 ---
 
-## ⚡ Quick Start (5 Minutes)
+## ⚡ **5-Minute Quick Start** 
 
-**Prerequisites**: Windows 10+ with Docker Desktop (8GB RAM recommended)
+### Prerequisites
+- **System**: Windows 10+ with Docker Desktop
+- **RAM**: 8GB minimum (12GB recommended)
+- **Tools**: DBeaver for SQL management
+- **Network**: Ports 3000, 5432, 8001, 8083, 8123, 9000, 9090, 9100 available
 
+### 🚀 **Step 1: Launch Full Stack**
 ```powershell
-# 1. Download
-git clone https://github.com/Julio-analyst/cdc-psql-clickhouse.git
-cd cdc-psql-clickhouse
+# Clone and navigate
+git clone https://github.com/Julio-analyst/cdc-psql-clickhouse-ui-enhanced.git
+cd cdc-psql-clickhouse-ui-enhanced
 
-# 2. Setup everything
-.\scripts\setup.ps1
+# Start all services (includes monitoring)
+docker-compose up -d
 
-# 3. Test performance  
-.\scripts\cdc-stress-insert.ps1
-
-# 4. Monitor real-time
-.\scripts\cdc-monitor.ps1
+# Verify all containers are running
+docker ps
+# Expected: 13 containers (PostgreSQL, Kafka, ClickHouse, Grafana, Prometheus, exporters, etc.)
 ```
 
-**Expected Results:**
-- ✅ 8 containers running (PostgreSQL, Kafka, ClickHouse, etc.)
-- ✅ Debezium connector: RUNNING
-- ✅ 3 Kafka topics created  
-- ✅ ClickHouse tables ready
-- ✅ Initial data synced
+### 🔧 **Step 2: Setup CDC Pipeline**
+```powershell
+# Setup ClickHouse tables and CDC
+.\scripts\setup.ps1
+
+# Register Debezium connector
+curl -X POST http://localhost:8083/connectors/ `
+  -H "Content-Type: application/json" `
+  -d '@config/debezium-source.json'
+```
+
+### 📊 **Step 3: Access Monitoring UIs**
+
+| Service | URL | Login | Purpose |
+|---------|-----|-------|---------|
+| **Grafana Dashboard** | http://localhost:3000 | admin/admin | Real-time CDC monitoring |
+| **ClickHouse Native** | http://localhost:8123 | - | Query interface |
+| **Kafka Connect UI** | http://localhost:8001 | - | Connector management |
+| **Kafka Manager** | http://localhost:9000 | - | Topic monitoring |
+| **Prometheus** | http://localhost:9090 | - | Metrics collection |
+| **PostgreSQL** | localhost:5432 | postgres/postgres | Source database |
+
+### ✅ **Step 4: Verify Real-time Sync**
+```powershell
+# Insert test data to PostgreSQL
+docker exec -it postgres-source psql -U postgres -d inventory -c "
+INSERT INTO inventory.orders (order_date, purchaser, quantity, product_id) 
+VALUES (NOW(), 'Test User', 5, 102);"
+
+# Check data in ClickHouse (should appear within 10 seconds)
+docker exec -it clickhouse clickhouse-client --query "
+SELECT id, purchaser, quantity, operation, _synced_at 
+FROM orders_final 
+ORDER BY _synced_at DESC LIMIT 5;"
+```
+
+### 🎯 **Step 5: Performance Testing**
+```powershell
+# Stress test with 100 inserts
+.\scripts\cdc-stress-insert.ps1
+
+# Monitor performance real-time  
+.\scripts\cdc-monitor.ps1
+
+# View results in Grafana
+# Open http://localhost:3000 → "CDC Pipeline Monitoring" dashboard
+```
+
+### 📈 **Expected Results After 5 Minutes:**
+- ✅ **13 containers running** (all services + monitoring)
+- ✅ **Debezium connector: RUNNING** (visible in Kafka Connect UI)
+- ✅ **3 Kafka topics created** (server.inventory.orders, schema-changes, heartbeat)
+- ✅ **ClickHouse tables ready** (orders_queue, orders_final view)
+- ✅ **Grafana dashboard showing real-time data**
+- ✅ **Prometheus monitoring all services**
+- ✅ **Sub-10-second PostgreSQL → ClickHouse sync**
 
 ---
 
-## 🚀 Quick Start (Step-by-Step)
+## 🛠️ **Detailed Setup Guide**
 
-1. **Prasyarat**
-   - Windows 10+ dengan Docker Desktop (8GB RAM disarankan)
-   - DBeaver (untuk query SQL dan monitoring)
+### **Core Services Setup**
 
-2. **Clone Repository**
-   ```powershell
-   git clone https://github.com/Julio-analyst/cdc-psql-clickhouse.git
-   cd cdc-psql-clickhouse
-   ```
+#### 1. **Database Configuration**
+```sql
+-- PostgreSQL (Source): localhost:5432
+-- Database: inventory
+-- Table: orders (auto-created with sample data)
 
-3. **Jalankan Semua Layanan**
-   ```powershell
-   docker-compose up -d
-   ```
+-- ClickHouse (Target): localhost:8123  
+-- Database: default
+-- Tables: orders_queue (Kafka Engine), orders_final (MaterializedView)
+```
 
-4. **Konfigurasi Debezium Connector**
-   - Edit file `config/debezium-source.json` sesuai kebutuhan, contoh:
-   ```json
-   {
-     "name": "postgres-source-connector",
-     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-     "database.hostname": "postgres",
-     "database.port": "5432",
-     "database.user": "postgres",
-     "database.password": "postgres",
-     "database.dbname": "inventory",
-     "database.server.name": "postgres-server",
-     "plugin.name": "pgoutput",
-     "slot.name": "debezium_slot",
-     "publication.name": "debezium_pub",
-     "table.include.list": "inventory.orders",
-     "topic.prefix": "postgres-server"
-   }
-   ```
-   - Register connector via Kafka Connect UI (`http://localhost:8001`) → Add Connection → Pilih PostgreSQL → Paste JSON di atas.
+#### 2. **CDC Pipeline Configuration**
+The Debezium connector configuration (`config/debezium-source.json`):
+```json
+{
+  "name": "inventory-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres-source",
+    "database.port": "5432",
+    "database.user": "postgres", 
+    "database.password": "postgres",
+    "database.dbname": "inventory",
+    "database.server.name": "postgres-server",
+    "table.include.list": "inventory.orders",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium_slot",
+    "publication.name": "debezium_pub",
+    "topic.prefix": "postgres-server"
+  }
+}
+```
 
-5. **Setup Table di ClickHouse**
-   - Buka DBeaver, connect ke ClickHouse (`localhost:8123`)
-   - Jalankan script `scripts/clickhouse-setup.sql` (hapus ORDER BY di akhir CREATE VIEW jika perlu)
-   - Pastikan table dan view sudah muncul di ClickHouse
+#### 3. **Monitoring Stack Setup**
+- **Grafana**: Pre-configured with ClickHouse, PostgreSQL, and Prometheus datasources
+- **Prometheus**: Scrapes metrics from all exporters
+- **Exporters**: Node, PostgreSQL, Kafka, and ClickHouse exporters for comprehensive monitoring
+- **Alerts**: Pre-configured for sync latency, data quality, and system health
+
+### **Advanced Configuration**
+
+#### DBeaver Database Connections
+```ini
+# PostgreSQL Source
+Host: localhost
+Port: 5432
+Database: inventory
+Username: postgres
+Password: postgres
+
+# ClickHouse Target  
+Host: localhost
+Port: 8123
+Database: default
+Username: default
+Password: (empty)
+```
+
+#### Custom Grafana Queries
+```sql
+-- Real-time sync monitoring
+SELECT 
+  toDateTime(toStartOfMinute(_synced_at)) as time,
+  count(*) as records_per_minute
+FROM orders_final 
+WHERE _synced_at >= now() - INTERVAL 1 HOUR
+GROUP BY time ORDER BY time;
+
+-- CDC operation distribution
+SELECT operation, count(*) as count, 
+       count(*) * 100.0 / sum(count(*)) OVER() as percentage
+FROM orders_final GROUP BY operation;
+```
 
 6. **Cek Data Real-time**
    - Insert/update/delete data di PostgreSQL (bisa via DBeaver)

@@ -8,11 +8,20 @@ datasources:
     isDefault: true
     basicAuth: false
     jsonData:
-      username: default
-      server: clickhouse
+      defaultDatabase: default
       port: 8123
-      database: default
+      server: clickhouse
+      username: default
+      protocol: http
     secureJsonData: {}
+    editable: true
+
+  - name: Prometheus
+    type: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: false
+    basicAuth: false
     editable: true
 
   - name: PostgreSQL
