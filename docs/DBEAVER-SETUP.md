@@ -1,10 +1,10 @@
-# 📊 DBeaver Connection Templates for CDC Pipeline
+# �️ DBeaver Setup Guide - CDC Pipeline
 
 ## 🔗 **Connection Profiles**
 
 ### **ClickHouse Connection**
 ```
-Connection Name: CDC-ClickHouse-Analytics
+Connection Name: source
 Database Type: ClickHouse
 Host: localhost
 Port: 8123
@@ -18,7 +18,7 @@ Additional Properties:
 
 ### **PostgreSQL Connection**
 ```
-Connection Name: CDC-PostgreSQL-Source
+Connection Name: target
 Database Type: PostgreSQL
 Host: localhost
 Port: 5432
