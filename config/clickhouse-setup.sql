@@ -1,4 +1,4 @@
-﻿-- ClickHouse Complete Setup for CDC
+-- ClickHouse Complete Setup for CDC
 -- This script creates Kafka Engine tables and materialized views for real-time CDC
 
 -- ===========================
@@ -191,39 +191,3 @@ SELECT
     now() as _synced_at
 FROM products_kafka_json
 WHERE JSONExtractString(raw_message, 'payload', 'op') IN ('c', 'r', 'u', 'd');
-
--- ===========================
--- UTILITY VIEWS AND FUNCTIONS
--- ===========================
-
--- Create view for monitoring all CDC operations
-CREATE VIEW IF NOT EXISTS cdc_operations_summary AS
-SELECT 
-    'orders' as table_name,
-    operation,
-    count(*) as count,
-    max(_synced_at) as last_sync
-FROM orders_final
-GROUP BY operation
-
-UNION ALL
-
-SELECT 
-    'customers' as table_name,
-    operation,
-    count(*) as count,
-    max(_synced_at) as last_sync
-FROM customers_final
-GROUP BY operation
-
-UNION ALL
-
-SELECT 
-    'products' as table_name,
-    operation,
-    count(*) as count,
-    max(_synced_at) as last_sync
-FROM products_final
-GROUP BY operation
-
-ORDER BY table_name, operation;

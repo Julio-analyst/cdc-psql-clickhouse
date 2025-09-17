@@ -1,24 +1,10 @@
-﻿
-services:
-  # ClickHouse Keeper (internal)
-  clickhouse-keeper:
-    image: clickhouse/clickhouse-keeper:24.3-alpine
-    container_name: clickhouse-keeper
-    ports:
-      - "9181:9181"
-    volumes:
-      - ./clickhouse-config/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-    networks:
-      - cdc-network
-
-  # ClickHouse Server (internal)
+﻿services:
+  # ClickHouse Server 
   clickhouse:
     image: clickhouse/clickhouse-server:24.3.3.102
     container_name: clickhouse
     environment:
       TZ: Asia/Jakarta
-    depends_on:
-      - clickhouse-keeper
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -104,10 +90,9 @@ services:
       CONNECT_PRODUCER_MAX_REQUEST_SIZE: 1048576
       CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
     volumes:
-      # FIXED: Mapping yang benar untuk plugin discovery
+      # Debezium PostgreSQL connector plugins
       - ./plugins:/usr/share/java/debezium-connector-postgres
-      - ./plugins/clickhouse:/usr/share/java/clickhouse-connector
-      # Additional plugin discovery path
+      # Additional plugin discovery path for Confluent Hub
       - ./plugins:/usr/share/confluent-hub-components/debezium-postgres
     # Memory limit untuk low-memory systems  
     mem_limit: 1g

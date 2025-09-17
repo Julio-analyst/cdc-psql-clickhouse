@@ -1,21 +1,15 @@
 ﻿{
-  "name": "postgres-source-connector",
-  "config": {
+    "name": "inventory-connector",
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-    "tasks.max": "1",
     "database.hostname": "postgres-source",
     "database.port": "5432",
-    "database.user": "postgres",
+    "database.user": "postgres", 
     "database.password": "postgres",
     "database.dbname": "inventory",
     "database.server.name": "postgres-server",
-    "table.include.list": "inventory.orders,inventory.customers,inventory.products",
+    "table.include.list": "inventory.orders",
     "plugin.name": "pgoutput",
-    "publication.autocreate.mode": "filtered",
-    "decimal.handling.mode": "double",
-    "include.schema.changes": "false",
-    "topic.prefix": "postgres-server",
-    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
-    "schema.history.internal.kafka.topic": "schema-changes.inventory"
-  }
+    "slot.name": "debezium_slot",
+    "publication.name": "debezium_pub",
+    "topic.prefix": "postgres-server"
 }

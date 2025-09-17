@@ -21,12 +21,7 @@
     <distributed_ddl>
         <path>/clickhouse/task_queue/ddl</path>
     </distributed_ddl>
-    <zookeeper>
-        <node>
-            <host>clickhouse-keeper</host>
-            <port>9181</port>
-        </node>
-    </zookeeper>
+    <!-- Zookeeper/Keeper not needed for single-node setup -->
     <mysql_port>9004</mysql_port>
     <timezone>Asia/Jakarta</timezone>
 </clickhouse>
