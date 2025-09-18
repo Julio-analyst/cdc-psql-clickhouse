@@ -11,5 +11,6 @@
     "plugin.name": "pgoutput",
     "slot.name": "debezium_slot",
     "publication.name": "debezium_pub",
-    "topic.prefix": "postgres-server"
+    "topic.prefix": "postgres-server",
+    "snapshot.mode": "never"
 }
